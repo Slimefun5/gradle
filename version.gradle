@@ -52,4 +52,4 @@ if (artifact != null && !artifact.isEmpty()) {
     versionSuffix = '-UNOFFICIAL'
 }
 
-ext.displayVersion = "${version}${versionSuffix}"
+ext.displayVersion = "${version}${versionSuffix}".toString()
