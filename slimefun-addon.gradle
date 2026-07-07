@@ -12,7 +12,9 @@ def sfSpigotApi   = project.findProperty('sfSpigotApi')   ?: '1.16.5-R0.1-SNAPSH
 
 // Shared version resolution (git-tag based, prefix/reachability-agnostic) — sets version + ext.displayVersion.
 apply from: 'https://raw.githubusercontent.com/Slimefun5/gradle/stable/version.gradle'
-def displayVersion = project.ext.displayVersion
+// -Partifact_version overrides the resolved version so a caller (e.g. the runServer orchestrator) can
+// stamp every addon with a single, uniform format for consistent boot logs; blank/absent falls back.
+def displayVersion = (project.findProperty('artifact_version')?.toString()?.trim() ?: project.ext.displayVersion).toString()
 
 github {
     accessToken = System.getenv('GITHUB_TOKEN') ?: ''
