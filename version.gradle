@@ -1,0 +1,55 @@
+// Shared version resolution for every Slimefun5 plugin (core + addons). Sets `version` and
+// `ext.displayVersion` ("<version><suffix>"). Resolution order:
+//   1. an explicit -Partifact_version=<tag> (release builds) wins;
+//   2. otherwise the highest git tag by numeric comparison;
+//   3. otherwise -PsfDefaultVersion (default "1.0.0").
+// The suffix is "" for a release, "-EXPERIMENTAL" under GitHub Actions, else "-UNOFFICIAL".
+//
+// We enumerate all tags and pick the highest ourselves rather than using `git describe` (returns the
+// nearest tag reachable from HEAD -> a branch missing the newest tags reports a stale version, a false
+// "update available" in the installer) or `git tag --sort=-v:refname` (the repo mixes gh-v*/v* prefixes,
+// which git sorts as separate lexical groups). Stripping the prefix + comparing numerically is both
+// reachability-independent and prefix-agnostic.
+
+// Compare dotted numeric versions component-by-component; a longer version with equal leading components
+// is higher (5.2.4.4 > 5.2.4). Non-numeric segments count as 0.
+def versionComparator = { String a, String b ->
+    def pa = a.split(/\./).collect { it.isInteger() ? (it as int) : 0 }
+    def pb = b.split(/\./).collect { it.isInteger() ? (it as int) : 0 }
+    for (int i = 0; i < Math.max(pa.size(), pb.size()); i++) {
+        int d = (i < pa.size() ? pa[i] : 0) <=> (i < pb.size() ? pb[i] : 0)
+        if (d != 0) return d
+    }
+    return 0
+} as Comparator
+
+def latestGitTagVersion = {
+    try {
+        def out = providers.exec {
+            workingDir = rootDir
+            commandLine 'git', 'tag'
+            ignoreExitValue = true
+        }
+        if (out.result.get().exitValue != 0) return null
+        def tags = out.standardOutput.asText.get().trim().readLines()
+            .collect { it.trim().replaceFirst(/^gh-/, '').replaceFirst(/^v/, '').replaceFirst(/^\./, '') }
+            .findAll { it && Character.isDigit(it.charAt(0) as char) }
+        return tags.isEmpty() ? null : tags.max(versionComparator)
+    } catch (Exception ignored) {
+        return null
+    }
+}
+
+def artifact = project.findProperty('artifact_version')?.toString()?.replaceFirst(/^v/, '')
+version = (artifact != null && !artifact.isEmpty()) ? artifact : (latestGitTagVersion() ?: (project.findProperty('sfDefaultVersion') ?: '1.0.0'))
+
+def versionSuffix
+if (artifact != null && !artifact.isEmpty()) {
+    versionSuffix = ''
+} else if (System.getenv('GITHUB_ACTIONS') == 'true') {
+    versionSuffix = '-EXPERIMENTAL'
+} else {
+    versionSuffix = '-UNOFFICIAL'
+}
+
+ext.displayVersion = "${version}${versionSuffix}"

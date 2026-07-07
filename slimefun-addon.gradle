@@ -7,41 +7,12 @@
 // The addon build then only sets `group`/`description` and adds its own extras (SlimefunMetrics, bStats +
 // relocation, extra libs/repos). Optional overrides via -P properties: sfCoreVersion, sfSpigotApi, sfDefaultVersion.
 
-def sfCoreVersion    = project.findProperty('sfCoreVersion')    ?: 'gh-v5.2.4.6'
-def sfSpigotApi      = project.findProperty('sfSpigotApi')      ?: '1.16.5-R0.1-SNAPSHOT'
-def sfDefaultVersion = project.findProperty('sfDefaultVersion') ?: '1.0.0'
+def sfCoreVersion = project.findProperty('sfCoreVersion') ?: 'gh-v5.2.4.6'
+def sfSpigotApi   = project.findProperty('sfSpigotApi')   ?: '1.16.5-R0.1-SNAPSHOT'
 
-// Version: an explicit -Partifact_version wins; otherwise the latest git tag (gh-/v- prefixes stripped);
-// otherwise the default. A suffix marks non-release builds.
-def latestGitTagVersion = {
-    try {
-        def out = providers.exec {
-            workingDir = rootDir
-            commandLine 'git', 'describe', '--tags', '--abbrev=0'
-            ignoreExitValue = true
-        }
-        if (out.result.get().exitValue != 0) return null
-        def tag = out.standardOutput.asText.get().trim().replaceFirst(/^gh-/, '').replaceFirst(/^v/, '')
-        return tag.isEmpty() ? null : tag
-    } catch (Exception ignored) {
-        return null
-    }
-}
-
-def artifact = project.findProperty('artifact_version')?.toString()?.replaceFirst(/^v/, '')
-version = (artifact != null && !artifact.isEmpty()) ? artifact : (latestGitTagVersion() ?: sfDefaultVersion)
-
-def versionSuffix
-if (artifact != null && !artifact.isEmpty()) {
-    versionSuffix = ''
-} else if (System.getenv('GITHUB_ACTIONS') == 'true') {
-    versionSuffix = '-EXPERIMENTAL'
-} else {
-    versionSuffix = '-UNOFFICIAL'
-}
-
-def displayVersion = "${version}${versionSuffix}"
-ext.displayVersion = displayVersion
+// Shared version resolution (git-tag based, prefix/reachability-agnostic) — sets version + ext.displayVersion.
+apply from: 'https://raw.githubusercontent.com/Slimefun5/gradle/stable/version.gradle'
+def displayVersion = project.ext.displayVersion
 
 github {
     accessToken = System.getenv('GITHUB_TOKEN') ?: ''
