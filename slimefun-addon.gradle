@@ -11,10 +11,11 @@ def sfCoreVersion = project.findProperty('sfCoreVersion') ?: 'gh-v5.2.4.6'
 def sfSpigotApi   = project.findProperty('sfSpigotApi')   ?: '1.16.5-R0.1-SNAPSHOT'
 
 // Shared version resolution (git-tag based, prefix/reachability-agnostic) — sets version + ext.displayVersion.
+// version.gradle already applies any -Partifact_version override (stripping a leading "v" and dropping the
+// -EXPERIMENTAL/-UNOFFICIAL suffix on release builds), so just use its result — do NOT re-read the raw
+// property here (that re-introduced the tag's "v", producing "<Name>-v1.2.3.jar").
 apply from: 'https://raw.githubusercontent.com/Slimefun5/gradle/stable/version.gradle'
-// -Partifact_version overrides the resolved version so a caller (e.g. the runServer orchestrator) can
-// stamp every addon with a single, uniform format for consistent boot logs; blank/absent falls back.
-def displayVersion = (project.findProperty('artifact_version')?.toString()?.trim() ?: project.ext.displayVersion).toString()
+def displayVersion = project.ext.displayVersion.toString()
 
 github {
     accessToken = System.getenv('GITHUB_TOKEN') ?: ''
