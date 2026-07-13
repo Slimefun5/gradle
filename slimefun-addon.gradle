@@ -60,6 +60,12 @@ tasks.named('jar') {
 tasks.named('shadowJar') {
     archiveFileName = "${project.name}-${displayVersion}.jar"
     exclude 'META-INF/**'
+    // Never bundle Slimefun core: it is present at runtime via depend:[Slimefun]. Shading a copy of
+    // its classes (githubImplementation drags core in transitively) causes loader-constraint
+    // LinkageErrors when a manually-installed addon jar enables alongside core. Covers both the new
+    // package and the legacy me.mrCookieSlime.* API core still ships.
+    exclude 'io/github/thebusybiscuit/slimefun5/**'
+    exclude 'me/mrCookieSlime/**'
 }
 tasks.named('build') {
     dependsOn 'shadowJar'
