@@ -7,7 +7,7 @@
 // The addon build then only sets `group`/`description` and adds its own extras (SlimefunMetrics, bStats +
 // relocation, extra libs/repos). Optional overrides via -P properties: sfCoreVersion, sfSpigotApi, sfDefaultVersion.
 
-def sfCoreVersion = project.findProperty('sfCoreVersion') ?: 'gh-v5.2.4.6'
+def sfCoreVersion = project.findProperty('sfCoreVersion') ?: 'gh-v5.3.2.8'
 def sfSpigotApi   = project.findProperty('sfSpigotApi')   ?: '1.16.5-R0.1-SNAPSHOT'
 
 // Shared version resolution (git-tag based, prefix/reachability-agnostic) — sets version + ext.displayVersion.
