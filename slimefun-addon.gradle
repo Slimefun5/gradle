@@ -2,7 +2,7 @@
 // the same version / publish / java / repository / dependency / task boilerplate.
 //
 // Apply AFTER the plugins { } block (which must apply: java, com.gradleup.shadow, io.github.intisy.github-gradle):
-//   apply(from = "https://raw.githubusercontent.com/Slimefun5/gradle/stable/slimefun-addon.gradle")
+//   apply(from = "https://raw.githubusercontent.com/Slimefun5/gradle/main/slimefun-addon.gradle")
 //
 // The addon build then only sets `group`/`description` and adds its own extras (SlimefunMetrics, bStats +
 // relocation, extra libs/repos). Optional overrides via -P properties: sfCoreVersion, sfSpigotApi, sfDefaultVersion.
@@ -14,7 +14,7 @@ def sfSpigotApi   = project.findProperty('sfSpigotApi')   ?: '1.16.5-R0.1-SNAPSH
 // version.gradle already applies any -Partifact_version override (stripping a leading "v" and dropping the
 // -EXPERIMENTAL/-UNOFFICIAL suffix on release builds), so just use its result — do NOT re-read the raw
 // property here (that re-introduced the tag's "v", producing "<Name>-v1.2.3.jar").
-apply from: 'https://raw.githubusercontent.com/Slimefun5/gradle/stable/version.gradle'
+apply from: 'https://raw.githubusercontent.com/Slimefun5/gradle/main/version.gradle'
 def displayVersion = project.ext.displayVersion.toString()
 
 github {
