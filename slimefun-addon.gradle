@@ -53,6 +53,13 @@ tasks.named('processResources') {
     filesMatching('plugin.yml') {
         expand('version': displayVersion)
     }
+    // Recorded for core's addon-staleness check; appended here so no addon edits its own plugin.yml.
+    doLast {
+        def pluginYml = new File(destinationDir, 'plugin.yml')
+        if (pluginYml.exists() && !(pluginYml.text =~ /(?m)^slimefun-api:/)) {
+            pluginYml.text = pluginYml.text.replaceAll(/\s+$/, '') + "\nslimefun-api: ${sfCoreVersion}\n"
+        }
+    }
 }
 tasks.named('jar') {
     enabled = false
